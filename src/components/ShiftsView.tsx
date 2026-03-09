@@ -235,7 +235,7 @@ export function ShiftsView({ job, refreshKey }: Props) {
 
   return (
     <div className="px-4 py-6 space-y-3">
-      <div className="text-sm text-gray-400 font-medium">{shifts.length} shifts</div>
+      <div className="text-sm text-gray-400 font-medium">{shifts.length} {shifts.length === 1 ? 'shift' : 'shifts'}</div>
       {shifts.map((s) => (
         <ShiftCard
           key={s.id}
