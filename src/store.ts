@@ -1,4 +1,10 @@
 import type { Job, Shift, AppSettings, Break } from './types';
+import {
+  syncPushShift,
+  syncDeleteShift,
+  syncPushJob,
+  syncDeleteJob,
+} from './lib/sync';
 
 // ─── Keys ────────────────────────────────────────────────────────────────────
 const JOBS_KEY = 'ht_jobs';
@@ -33,7 +39,6 @@ const defaultJob: Job = {
   dailyOvertimeAfter: 8,
   weeklyOvertimeAfter: 40,
   overtimeMultiplier: 1.5,
-  // Real IRS tax fields
   filingStatus: 'single',
   state: 'TX',
   color: '#7C6FF7',
@@ -47,7 +52,6 @@ const defaultSettings: AppSettings = {
 };
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
-/** Migrate old jobs that only had taxPercent to the new filingStatus+state fields */
 function migrateJob(j: Job): Job {
   if (!j.filingStatus) {
     return { ...j, filingStatus: 'single', state: j.state ?? 'TX' };
@@ -71,6 +75,7 @@ export function saveJob(job: Job): void {
   if (idx >= 0) jobs[idx] = job;
   else jobs.push(job);
   save(JOBS_KEY, jobs);
+  void syncPushJob(job);
 }
 
 export function createJob(partial: Omit<Job, 'id'>): Job {
@@ -78,12 +83,14 @@ export function createJob(partial: Omit<Job, 'id'>): Job {
   const jobs = getJobs();
   jobs.push(job);
   save(JOBS_KEY, jobs);
+  void syncPushJob(job);
   return job;
 }
 
 export function deleteJob(id: string): void {
   const jobs = getJobs().filter((j) => j.id !== id);
   save(JOBS_KEY, jobs);
+  void syncDeleteJob(id);
 }
 
 // ─── Shifts ───────────────────────────────────────────────────────────────────
@@ -97,11 +104,13 @@ export function saveShift(shift: Shift): void {
   if (idx >= 0) shifts[idx] = shift;
   else shifts.push(shift);
   save(SHIFTS_KEY, shifts);
+  void syncPushShift(shift);
 }
 
 export function deleteShift(id: string): void {
   const shifts = getShifts().filter((s) => s.id !== id);
   save(SHIFTS_KEY, shifts);
+  void syncDeleteShift(id);
 }
 
 export function getActiveShift(): Shift | null {
@@ -125,7 +134,6 @@ export function clockIn(jobId: string, hourlyRate: number): Shift {
 export function clockOut(shiftId: string): Shift {
   const shifts = getShifts();
   const shift = shifts.find((s) => s.id === shiftId)!;
-  // end any open break first
   const openBreak = shift.breaks.find((b) => b.endTime === null);
   if (openBreak) openBreak.endTime = Date.now();
   shift.endTime = Date.now();
@@ -152,6 +160,15 @@ export function endBreak(shiftId: string): void {
 
 export function updateShift(shift: Shift): void {
   saveShift(shift);
+}
+
+// ─── Bulk restore (used after pulling from cloud on new device) ───────────────
+export function restoreShifts(shifts: Shift[]): void {
+  save(SHIFTS_KEY, shifts);
+}
+
+export function restoreJobs(jobs: Job[]): void {
+  save(JOBS_KEY, jobs.map(migrateJob));
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────

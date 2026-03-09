@@ -6,6 +6,9 @@ import { ShiftsView } from './components/ShiftsView';
 import { JobsView } from './components/JobsView';
 import { ReportsView } from './components/ReportsView';
 import { SettingsView } from './components/SettingsView';
+import { SyncSetup } from './components/SyncSetup';
+import { isSyncEnabled } from './lib/supabase';
+import { getUserKey } from './lib/sync';
 
 // SVG icons matching the original app's tab bar
 const IconHome = ({ active }: { active: boolean }) => (
@@ -56,6 +59,7 @@ export default function App() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [settings, setSettings] = useState<AppSettings>(getSettings());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showSyncSetup, setShowSyncSetup] = useState(false);
 
   const refresh = useCallback(() => {
     setJobs(getJobs());
@@ -63,7 +67,13 @@ export default function App() {
     setRefreshKey((k) => k + 1);
   }, []);
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    refresh();
+    // Show sync setup on first open if sync is enabled but no key yet
+    if (isSyncEnabled && !getUserKey()) {
+      setShowSyncSetup(true);
+    }
+  }, []);
 
   const activeJob = jobs.find((j) => j.id === settings.activeJobId) ?? jobs[0];
 
@@ -173,6 +183,11 @@ export default function App() {
           );
         })}
       </nav>
+
+      {/* Cloud sync setup modal — shown on first open */}
+      {showSyncSetup && (
+        <SyncSetup onDone={() => { setShowSyncSetup(false); refresh(); }} />
+      )}
     </div>
   );
 }
