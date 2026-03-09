@@ -1,5 +1,5 @@
 // ─── Real US Tax Engine (matches TaxPilot) ───────────────────────────────────
-// Sources: IRS Publication 15-T (2024), SSA wage base, IRS Rev. Proc. 2023-34
+// Sources: IRS Rev. Proc. 2024-40 (tax year 2025), SSA 2025 wage base announcement
 
 export type FilingStatus =
   | 'single'
@@ -7,44 +7,44 @@ export type FilingStatus =
   | 'married_filing_separately'
   | 'head_of_household';
 
-// ─── Federal brackets (2024 annual income) ───────────────────────────────────
+// ─── Federal brackets (2025 tax year — IRS Rev. Proc. 2024-40) ───────────────
 type Bracket = { rate: number; upTo: number | null };
 
 const FEDERAL_BRACKETS: Record<FilingStatus, Bracket[]> = {
   single: [
-    { rate: 0.10, upTo: 11_600 },
-    { rate: 0.12, upTo: 47_150 },
-    { rate: 0.22, upTo: 100_525 },
-    { rate: 0.24, upTo: 191_950 },
-    { rate: 0.32, upTo: 243_725 },
-    { rate: 0.35, upTo: 609_350 },
+    { rate: 0.10, upTo: 11_925 },
+    { rate: 0.12, upTo: 48_475 },
+    { rate: 0.22, upTo: 103_350 },
+    { rate: 0.24, upTo: 197_300 },
+    { rate: 0.32, upTo: 250_525 },
+    { rate: 0.35, upTo: 626_350 },
     { rate: 0.37, upTo: null },
   ],
   married_filing_jointly: [
-    { rate: 0.10, upTo: 23_200 },
-    { rate: 0.12, upTo: 94_300 },
-    { rate: 0.22, upTo: 201_050 },
-    { rate: 0.24, upTo: 383_900 },
-    { rate: 0.32, upTo: 487_450 },
-    { rate: 0.35, upTo: 731_200 },
+    { rate: 0.10, upTo: 23_850 },
+    { rate: 0.12, upTo: 96_950 },
+    { rate: 0.22, upTo: 206_700 },
+    { rate: 0.24, upTo: 394_600 },
+    { rate: 0.32, upTo: 501_050 },
+    { rate: 0.35, upTo: 751_600 },
     { rate: 0.37, upTo: null },
   ],
   married_filing_separately: [
-    { rate: 0.10, upTo: 11_600 },
-    { rate: 0.12, upTo: 47_150 },
-    { rate: 0.22, upTo: 100_525 },
-    { rate: 0.24, upTo: 191_950 },
-    { rate: 0.32, upTo: 243_725 },
-    { rate: 0.35, upTo: 365_600 },
+    { rate: 0.10, upTo: 11_925 },
+    { rate: 0.12, upTo: 48_475 },
+    { rate: 0.22, upTo: 103_350 },
+    { rate: 0.24, upTo: 197_300 },
+    { rate: 0.32, upTo: 250_525 },
+    { rate: 0.35, upTo: 375_800 },
     { rate: 0.37, upTo: null },
   ],
   head_of_household: [
-    { rate: 0.10, upTo: 16_550 },
-    { rate: 0.12, upTo: 63_100 },
-    { rate: 0.22, upTo: 100_500 },
-    { rate: 0.24, upTo: 191_950 },
-    { rate: 0.32, upTo: 243_700 },
-    { rate: 0.35, upTo: 609_350 },
+    { rate: 0.10, upTo: 17_000 },
+    { rate: 0.12, upTo: 64_850 },
+    { rate: 0.22, upTo: 103_350 },
+    { rate: 0.24, upTo: 197_300 },
+    { rate: 0.32, upTo: 250_500 },
+    { rate: 0.35, upTo: 626_350 },
     { rate: 0.37, upTo: null },
   ],
 };
@@ -71,7 +71,7 @@ export function calcFederalTax(annualGross: number, filing: FilingStatus): numbe
 // ─── FICA ────────────────────────────────────────────────────────────────────
 const SS_RATE = 0.062;        // Social Security employee rate
 const MEDICARE_RATE = 0.0145; // Medicare employee rate
-const SS_WAGE_BASE = 168_600; // 2024 SS wage base
+const SS_WAGE_BASE = 176_100; // 2025 SS wage base (SSA announcement Oct 2024)
 
 export function calcFICA(annualGross: number): { socialSecurity: number; medicare: number } {
   const ssWages = Math.min(annualGross, SS_WAGE_BASE);

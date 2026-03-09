@@ -117,7 +117,7 @@ function JobForm({ initial, onSave, onCancel }: JobFormProps) {
             className="text-[10px] px-2 py-0.5 rounded-full font-medium"
             style={{ backgroundColor: '#7C6FF720', color: '#7C6FF7' }}
           >
-            IRS 2024
+            IRS 2025
           </span>
         </div>
 
