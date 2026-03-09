@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/hours-tracker-pro/sw.js', { scope: '/hours-tracker-pro/' })})}
