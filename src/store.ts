@@ -33,8 +33,10 @@ const defaultJob: Job = {
   dailyOvertimeAfter: 8,
   weeklyOvertimeAfter: 40,
   overtimeMultiplier: 1.5,
-  taxPercent: 22,
-  color: '#6366f1',
+  // Real IRS tax fields
+  filingStatus: 'single',
+  state: 'TX',
+  color: '#7C6FF7',
   reminderClockIn: null,
   reminderClockOut: null,
 };
@@ -45,6 +47,14 @@ const defaultSettings: AppSettings = {
 };
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
+/** Migrate old jobs that only had taxPercent to the new filingStatus+state fields */
+function migrateJob(j: Job): Job {
+  if (!j.filingStatus) {
+    return { ...j, filingStatus: 'single', state: j.state ?? 'TX' };
+  }
+  return j;
+}
+
 export function getJobs(): Job[] {
   const jobs = load<Job[]>(JOBS_KEY, []);
   if (jobs.length === 0) {
@@ -52,7 +62,7 @@ export function getJobs(): Job[] {
     save(JOBS_KEY, initial);
     return initial;
   }
-  return jobs;
+  return jobs.map(migrateJob);
 }
 
 export function saveJob(job: Job): void {

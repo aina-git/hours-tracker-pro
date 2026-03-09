@@ -212,7 +212,7 @@ export function HomeView({ job, onRefresh, refreshKey }: Props) {
   const breakElapsedMs = activeBreak ? now - activeBreak.startTime : 0;
 
   const liveGross = (elapsedMs / 3_600_000) * (activeShift?.hourlyRate ?? job.hourlyRate);
-  const liveNet = liveGross * (1 - job.taxPercent / 100);
+  const liveNet = liveGross > 0 ? calcShiftPay({ ...activeShift!, endTime: Date.now() }, job).netPay : 0;
 
   const weekly = calcWeeklyPay(weekShifts, job);
 

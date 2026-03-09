@@ -1,3 +1,6 @@
+import type { FilingStatus } from './utils/tax';
+export type { FilingStatus };
+
 export interface Break {
   id: string;
   startTime: number; // unix ms
@@ -10,7 +13,7 @@ export interface Shift {
   startTime: number; // unix ms
   endTime: number | null; // null if shift is active
   breaks: Break[];
-  hourlyRate: number; // override for this shift; falls back to job rate
+  hourlyRate: number; // per-shift override; falls back to job rate
   notes: string;
 }
 
@@ -20,13 +23,16 @@ export interface Job {
   hourlyRate: number;
   currency: string;
   overtimeEnabled: boolean;
-  dailyOvertimeAfter: number; // hours, e.g. 8
-  weeklyOvertimeAfter: number; // hours, e.g. 40
-  overtimeMultiplier: number; // e.g. 1.5
-  taxPercent: number; // e.g. 22
-  color: string; // hex color for the job badge
-  reminderClockIn: string | null; // "HH:MM" or null
-  reminderClockOut: string | null; // "HH:MM" or null
+  dailyOvertimeAfter: number;  // hours e.g. 8
+  weeklyOvertimeAfter: number; // hours e.g. 40
+  overtimeMultiplier: number;  // e.g. 1.5
+  // Real IRS tax fields (replaces flat taxPercent)
+  filingStatus: FilingStatus;
+  state: string; // 2-letter US state code e.g. "TX"
+  taxPercent?: number; // legacy fallback — kept so old data still loads
+  color: string;
+  reminderClockIn: string | null;
+  reminderClockOut: string | null;
 }
 
 export interface AppSettings {
@@ -41,4 +47,10 @@ export interface PayResult {
   netPay: number;
   totalHours: number;
   totalBreakMinutes: number;
+  // Full tax breakdown
+  federalTax: number;
+  stateTax: number;
+  socialSecurity: number;
+  medicare: number;
+  effectiveRate: number;
 }
